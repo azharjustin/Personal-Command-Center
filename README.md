@@ -126,50 +126,57 @@ npm run dev
 
 You can deploy Personal Command Center using either of the following strategies:
 
-### Option 1: Monorepo Single-Service Deployment (Render / Railway) ⭐ *Recommended*
+### Option 1: Render Static Site (Client) + Render Web Service (Server) ⚡ *Fastest & Global CDN Accelerated*
 
-Deploy the entire app (Frontend + Backend) as a single service on **Render** or **Railway**. Express will serve the production-built React application.
+Deploy the React frontend on Render's **Static Site** (served via global CDN, 100% free, never sleeps) and the Express backend on Render's **Web Service**.
 
-1. **Database Setup**: Create a free database on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and copy your connection string (`mongodb+srv://...`).
-2. **Push Code**: Push your repository to GitHub / GitLab.
-3. **Create Web Service on Render**:
-   - Connect your GitHub repo to [Render](https://render.com/).
+#### Step 1: Database Setup (MongoDB Atlas)
+1. Sign up on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+2. Create a free **M0 Cluster** (select region e.g. `us-east-1` or `eu-central-1`).
+3. Under **Network Access**, add IP `0.0.0.0/0` (Allow access from anywhere).
+4. Create a Database User and copy your connection string (`mongodb+srv://user:pass@cluster0.mongodb.net/personal-command-center`).
+
+#### Step 2: Deploy Backend API (Render Web Service)
+1. Sign in to [Render](https://render.com/) and click **New +** -> **Web Service**.
+2. Connect your GitHub repository.
+3. Settings:
+   - **Root Directory**: `server`
    - **Environment**: `Node`
-   - **Build Command**: `npm run build:all`
-   - **Start Command**: `npm start`
-4. **Configure Environment Variables in Render Dashboard**:
+   - **Build Command**: `npm install`
+   - **Start Command**: `node src/index.js`
+4. **Environment Variables**:
    - `NODE_ENV`: `production`
-   - `MONGODB_URI`: `mongodb+srv://<user>:<password>@cluster.mongodb.net/personal-command-center`
-   - `JWT_SECRET`: `your_secure_32_character_secret_key`
+   - `MONGODB_URI`: *Your MongoDB Atlas connection string*
+   - `JWT_SECRET`: *Your secure random 32+ character key*
    - `JWT_EXPIRE`: `1h`
-5. Click **Deploy**. Render will build the React app, start the Express server, and serve the application live!
+5. Click **Create Web Service** and copy your backend URL (e.g. `https://pcc-api.onrender.com`).
+
+#### Step 3: Deploy Frontend (Render Static Site)
+1. On Render, click **New +** -> **Static Site**.
+2. Connect the same GitHub repository.
+3. Settings:
+   - **Root Directory**: `client`
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `dist`
+4. **Environment Variables**:
+   - `VITE_API_URL`: `https://pcc-api.onrender.com/api` *(Your backend URL + /api)*
+5. Click **Create Static Site**. Copy your live frontend URL (e.g. `https://personal-command-center.onrender.com`).
+
+#### Step 4: Configure CORS on Backend
+1. Return to your Render **Web Service** (`pcc-api`) -> **Environment**.
+2. Add/update variable:
+   - `CLIENT_URL`: `https://personal-command-center.onrender.com` *(Your live frontend URL)*
 
 ---
 
-### Option 2: Decoupled Deployment (Vercel / Netlify + Render)
+### Option 2: Monorepo Single Web Service Deployment (Render)
 
-Deploy the React frontend on **Vercel** or **Netlify**, and the Express API on **Render**.
+Deploy both client and server together in 1 Web Service:
 
-#### 1. Deploy Backend (Render Web Service)
-- Connect repository.
-- **Root Directory**: `server`
-- **Build Command**: `npm install`
-- **Start Command**: `node src/index.js`
-- **Environment Variables**:
-  - `NODE_ENV`: `production`
-  - `MONGODB_URI`: `mongodb+srv://...`
-  - `JWT_SECRET`: `your_secure_secret_key`
-  - `JWT_EXPIRE`: `1h`
-  - `CLIENT_URL`: `https://your-frontend-domain.vercel.app`
-
-#### 2. Deploy Frontend (Vercel)
-- Import repo on [Vercel](https://vercel.com).
-- **Framework Preset**: `Vite`
-- **Root Directory**: `client`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Environment Variables**:
-  - `VITE_API_URL`: `https://your-backend-api.onrender.com/api`
+- **Root Directory**: *(Leave empty)*
+- **Build Command**: `npm run build:all`
+- **Start Command**: `npm start`
+- **Environment Variables**: `NODE_ENV=production`, `MONGODB_URI=...`, `JWT_SECRET=...`, `JWT_EXPIRE=1h`
 
 ---
 
