@@ -54,7 +54,7 @@ export default function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="custom-auth-input"
-              placeholder="Azhar"
+              placeholder="your name"
               required
               autoFocus
             />
