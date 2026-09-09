@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: pcc-api
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRE
+        value: 1h
+
+  - type: static
+    name: personal-command-center
+    env: static
+    rootDir: client
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
